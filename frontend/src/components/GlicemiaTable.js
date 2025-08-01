@@ -1,45 +1,44 @@
-import React, { useRef } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import React from 'react';
+import GlicemiaFilter from './GlicemiaFilter';
 
-const tiposMedicao = [
-  "Glicemia Jejum", "Glicemia 2h após café", "Glicemia antes do almoço",
-  "Glicemia 2h após almoço", "Glicemia antes do Jantar", "Glicemia 2h após o Jantar",
-  "Glicemia ao deitar", "Glicemia as 3:00"
-];
+const GlicemiaTable = ({ data, onFilter }) => {
 
-function GlicemiaTable({ data }) {
-  const componentRef = useRef();
-
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
-    <div>
-      <div ref={componentRef}>
-        <h2>Tabela de Glicemia</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              {tiposMedicao.map((tipo, index) => <th key={index}>{tipo}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, index) => (
-              <tr key={index}>
-                <td>{row.data}</td>
-                {tiposMedicao.map((tipo, i) => (
-                  <td key={i}>{row[tipo] || '-'}</td>
-                ))}
+    <div className="table-section">
+      <h3>Visualizar Registros</h3>
+      <GlicemiaFilter onFilter={onFilter} />
+      
+      {data.length > 0 ? (
+        <>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Valor (mg/dL)</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <button onClick={handlePrint}>Imprimir Tabela</button>
+            </thead>
+            <tbody>
+              {data.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.data}</td>
+                  <td>{item.tipo}</td>
+                  <td>{item.valor}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button onClick={handlePrint} style={{ marginTop: '20px' }}>Imprimir Tabela</button>
+        </>
+      ) : (
+        <p>Nenhum registro encontrado. Use o filtro ou adicione um novo registro.</p>
+      )}
     </div>
   );
-}
+};
 
 export default GlicemiaTable;
