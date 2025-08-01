@@ -1,58 +1,91 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
-const tiposMedicao = [
-  "Glicemia Jejum", "Glicemia 2h após café", "Glicemia antes do almoço",
-  "Glicemia 2h após almoço", "Glicemia antes do Jantar", "Glicemia 2h após o Jantar",
-  "Glicemia ao deitar", "Glicemia as 3:00"
+const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
+
+const tiposGlicemia = [
+  'Glicemia Jejum',
+  'Glicemia 2h após café',
+  'Glicemia antes do almoço',
+  'Glicemia 2h após almoço',
+  'Glicemia antes do jantar',
+  'Glicemia 2h após o jantar',
+  'Glicemia ao deitar',
+  'Glicemia as 3:00',
 ];
 
-function GlicemiaForm() {
-  const [data, setData] = useState('');
-  const [tipoMedicao, setTipoMedicao] = useState(tiposMedicao[0]);
+const GlicemiaForm = ({ onSave }) => {
+  const [data, setData] = useState(new Date());
+  const [tipo, setTipo] = useState(tiposGlicemia[0]);
   const [valor, setValor] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!valor) {
+      setError('Por favor, insira o valor da glicemia.');
+      return;
+    }
+
+    const payload = {
+      data: data.toISOString().split('T')[0], // Formato YYYY-MM-DD
+      tipo,
+      valor: parseFloat(valor),
+    };
+
     try {
-      const response = await axios.post('https://controle-de-glicemia.onrender.com', {
-        data,
-        tipo_medicao: tipoMedicao,
-        valor: parseFloat(valor),
-      });
-      setMessage(response.data.message);
-      // Limpar formulário após o sucesso
-      setData('');
+      await axios.post(apiBaseUrl, payload);
+      alert('Registro salvo com sucesso!');
       setValor('');
-    } catch (error) {
-      setMessage(error.response.data.error || "Erro ao adicionar medição.");
+      onSave(); // Chama a função para atualizar a tabela
+    } catch (err) {
+      setError('Erro ao salvar o registro. Tente novamente.');
+      console.error(err);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Adicionar Medição</h2>
-      <div>
-        <label>Data:</label>
-        <input type="date" value={data} onChange={(e) => setData(e.target.value)} required />
-      </div>
-      <div>
-        <label>Coluna:</label>
-        <select value={tipoMedicao} onChange={(e) => setTipoMedicao(e.target.value)} required>
-          {tiposMedicao.map((tipo, index) => (
-            <option key={index} value={tipo}>{tipo}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label>Valor da Glicemia:</label>
-        <input type="number" value={valor} onChange={(e) => setValor(e.target.value)} required />
-      </div>
-      <button type="submit">Salvar Medição</button>
-      {message && <p>{message}</p>}
-    </form>
+    <div className="form-section">
+      <h3>Adicionar Novo Registro</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="data">Data:</label>
+          <DatePicker
+            selected={data}
+            onChange={(date) => setData(date)}
+            dateFormat="dd/MM/yyyy"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="tipo">Tipo de Glicemia:</label>
+          <select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)}>
+            {tiposGlicemia.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="valor">Valor (mg/dL):</label>
+          <input
+            id="valor"
+            type="number"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            step="0.1"
+            placeholder="Ex: 95.5"
+          />
+        </div>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <button type="submit">Salvar</button>
+      </form>
+    </div>
   );
-}
+};
 
 export default GlicemiaForm;
