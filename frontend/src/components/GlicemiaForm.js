@@ -16,7 +16,7 @@ function GlicemiaForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/medicao', {
+      const response = await axios.post('https://controle-de-glicemia.onrender.com', {
         data,
         tipo_medicao: tipoMedicao,
         valor: parseFloat(valor),
