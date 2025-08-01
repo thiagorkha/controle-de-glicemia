@@ -1,37 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import GlicemiaForm from './components/GlicemiaForm';
-import FilterForm from './components/FilterForm';
 import GlicemiaTable from './components/GlicemiaTable';
 import './index.css';
 
+const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
+
 function App() {
-  const [showTable, setShowTable] = useState(false);
-  const [tableData, setTableData] = useState([]);
+  const [registros, setRegistros] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleShowTable = (data) => {
-    setTableData(data);
-    setShowTable(true);
+  const fetchRegistros = async (startDate = null, endDate = null) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = {};
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+      
+      const response = await axios.get(apiBaseUrl, { params });
+      setRegistros(response.data);
+    } catch (err) {
+      setError('Erro ao buscar os registros.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleHideTable = () => {
-    setShowTable(false);
-  };
+  // Carrega os dados na montagem do componente
+  useEffect(() => {
+    fetchRegistros();
+  }, []);
 
   return (
-    <div className="app-container">
-      <h1>Controle de Glicemia</h1>
-      {!showTable ? (
-        <>
-          <GlicemiaForm />
-          <button onClick={() => setShowTable(true)}>Visualizar Tabela</button>
-        </>
-      ) : (
-        <>
-          <FilterForm onFilter={handleShowTable} />
-          <GlicemiaTable data={tableData} />
-          <button onClick={handleHideTable}>Voltar para o Formulário</button>
-        </>
-      )}
+    <div className="App">
+      <div className="container">
+        <h1>Controle de Glicemia</h1>
+        
+        <GlicemiaForm onSave={() => fetchRegistros()} />
+        
+        {loading && <p>Carregando registros...</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        
+        {!loading && !error && (
+          <GlicemiaTable 
+            data={registros} 
+            onFilter={fetchRegistros} 
+          />
+        )}
+      </div>
     </div>
   );
 }
