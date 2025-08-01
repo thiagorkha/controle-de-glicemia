@@ -7,7 +7,7 @@ function FilterForm({ onFilter }) {
 
   const handleFilter = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/medicoes?start_date=${startDate}&end_date=${endDate}`);
+      const response = await axios.get(`https://controle-de-glicemia.onrender.com/medicoes?start_date=${startDate}&end_date=${endDate}`);
       onFilter(response.data);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
