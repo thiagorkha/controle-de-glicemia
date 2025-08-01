@@ -1,60 +1,57 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from database import get_db_connection
+from database import get_db, init_db
 
 app = Flask(__name__)
-CORS(app) # Habilita CORS para o frontend React
+CORS(app) # Habilita CORS para todas as rotas e origens
 
-# Rota para adicionar uma nova medição
-@app.route('/medicao', methods=['POST'])
-def add_medicao():
-    data = request.json
-    data_medicao = data.get('data')
-    tipo_medicao = data.get('tipo_medicao')
-    valor = data.get('valor')
+# Inicializa o banco de dados na primeira execução
+with app.app_context():
+    init_db()
 
-    if not all([data_medicao, tipo_medicao, valor]):
-        return jsonify({"error": "Todos os campos são obrigatórios."}), 400
+@app.route('/api/glicemia', methods=['POST'])
+def add_glicemia():
+    try:
+        data = request.get_json()
+        required_fields = ['data', 'tipo', 'valor']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Campos obrigatórios ausentes"}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO glicemia (data, tipo_medicao, valor) VALUES (?, ?, ?)",
-                   (data_medicao, tipo_medicao, valor))
-    conn.commit()
-    conn.close()
+        data_val = data['data']
+        tipo_val = data['tipo']
+        valor_val = data['valor']
 
-    return jsonify({"message": "Medição adicionada com sucesso!"}), 201
+        with get_db() as db:
+            cursor = db.cursor()
+            cursor.execute(
+                "INSERT INTO glicemia (data, tipo, valor) VALUES (?, ?, ?)",
+                (data_val, tipo_val, valor_val)
+            )
+            db.commit()
+            return jsonify({"message": "Registro adicionado com sucesso"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-# Rota para obter medições com filtro de período
-@app.route('/medicoes', methods=['GET'])
-def get_medicoes():
-    start_date = request.args.get('start_date')
-    end_date = request.args.get('end_date')
+@app.route('/api/glicemia', methods=['GET'])
+def get_glicemia():
+    try:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+        with get_db() as db:
+            cursor = db.cursor()
+            if start_date and end_date:
+                query = "SELECT * FROM glicemia WHERE data BETWEEN ? AND ?"
+                cursor.execute(query, (start_date, end_date))
+            else:
+                query = "SELECT * FROM glicemia ORDER BY data DESC"
+                cursor.execute(query)
 
-    if start_date and end_date:
-        cursor.execute("SELECT * FROM glicemia WHERE data BETWEEN ? AND ? ORDER BY data, tipo_medicao",
-                       (start_date, end_date))
-    else:
-        cursor.execute("SELECT * FROM glicemia ORDER BY data, tipo_medicao")
-
-    medicoes = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-
-    # Reorganizar os dados para o formato de tabela do frontend
-    # A lógica aqui é agrupar as medições por data
-    tabela = {}
-    for medicao in medicoes:
-        data = medicao['data']
-        if data not in tabela:
-            tabela[data] = {'data': data}
-        tabela[data][medicao['tipo_medicao']] = medicao['valor']
-
-    return jsonify(list(tabela.values()))
+            rows = cursor.fetchall()
+            results = [dict(row) for row in rows]
+            return jsonify(results), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    from database import create_table
-    create_table()
     app.run(debug=True)
