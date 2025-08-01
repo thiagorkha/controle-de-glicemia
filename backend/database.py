@@ -1,25 +1,34 @@
-import sqlite3
-
-DATABASE = 'glicemia.db'
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 def get_db():
-    db = sqlite3.connect(DATABASE)
-    db.row_factory = sqlite3.Row
-    return db
+    conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    return conn, cursor
 
 def init_db():
-    with get_db() as db:
-        cursor = db.cursor()
+    conn, cursor = None, None
+    try:
+        conn, cursor = get_db()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS glicemia (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                data TEXT NOT NULL,
-                tipo TEXT NOT NULL,
+                id SERIAL PRIMARY KEY,
+                data DATE NOT NULL,
+                tipo VARCHAR(255) NOT NULL,
                 valor REAL NOT NULL
             )
         ''')
-        db.commit()
+        conn.commit()
+    except Exception as e:
+        print(f"Erro ao inicializar o banco de dados: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 if __name__ == '__main__':
-    init_db()
-    print("Banco de dados 'glicemia.db' inicializado.")
+    # A inicialização do banco de dados agora dependerá da variável de ambiente
+    # para ser executada. Isso será configurado no Render.
+    pass
