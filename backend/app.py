@@ -10,7 +10,7 @@ CORS(app)
 # Função para conectar ao banco de dados PostgreSQL
 def get_db():
     try:
-        conn = psycopg2.connect(os.environ.get("postgresql://glicemia_user:cCYowpS8Rzb7J9O07IpfZ9dv3s2Y4qKf@dpg-d26fmp3ipnbc73b2hh20-a.oregon-postgres.render.com/glicemia_7qz4"))
+        conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         return conn, cursor
     except Exception as e:
