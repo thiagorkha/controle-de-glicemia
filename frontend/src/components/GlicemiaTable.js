@@ -2,12 +2,18 @@ import React from 'react';
 import GlicemiaFilter from './GlicemiaFilter';
 import { GLICEMIA_TIPOS } from '../utils/constants';
 
+// Função para formatar a string de data de YYYY-MM-DD para dd/mm/aaaa
+const formatDateString = (dateString) => {
+  if (!dateString) return '';
+  const [year, month, day] = dateString.split('-');
+  return `${day}/${month}/${year}`;
+};
+
 const GlicemiaTable = ({ data, onFilter }) => {
   const handlePrint = () => {
     window.print();
   };
 
-  // 1. Agrupar os dados por data para facilitar o acesso
   const groupedByDate = data.reduce((acc, current) => {
     const date = current.data;
     if (!acc[date]) {
@@ -17,7 +23,6 @@ const GlicemiaTable = ({ data, onFilter }) => {
     return acc;
   }, {});
 
-  // 2. Extrair a lista de datas ordenadas
   const sortedDates = Object.keys(groupedByDate).sort().reverse();
 
   return (
@@ -40,10 +45,9 @@ const GlicemiaTable = ({ data, onFilter }) => {
               <tbody>
                 {sortedDates.map((date) => (
                   <tr key={date}>
-                    <td>{date}</td>
+                    <td>{formatDateString(date)}</td> {/* AQUI ESTÁ A MUDANÇA */}
                     {GLICEMIA_TIPOS.map((tipo) => (
                       <td key={tipo}>
-                        {/* Se houver um valor para a data e o tipo, exiba-o. Senão, a célula fica vazia. */}
                         {groupedByDate[date][tipo] || ''}
                       </td>
                     ))}
