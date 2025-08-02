@@ -20,17 +20,20 @@ const GlicemiaForm = ({ onSave }) => {
       setError('Por favor, insira o valor da glicemia.');
       return;
     }
+
+    // SOLUÇÃO FINAL PARA O PROBLEMA DE FUSO HORÁRIO
+    // Cria uma nova data e adiciona o fuso horário local para compensar o desvio.
+    const userDate = new Date(data);
+    userDate.setHours(userDate.getHours() + userDate.getTimezoneOffset() / 60);
     
-    // SOLUÇÃO MAIS EXPLÍCITA PARA EVITAR O PROBLEMA DE FUSO HORÁRIO
-    // Pega as partes da data no fuso horário local e monta a string manualmente.
-    const year = data.getFullYear();
-    const month = String(data.getMonth() + 1).padStart(2, '0');
-    const day = String(data.getDate()).padStart(2, '0');
+    const year = userDate.getFullYear();
+    const month = String(userDate.getMonth() + 1).padStart(2, '0');
+    const day = String(userDate.getDate()).padStart(2, '0');
     
     const formattedDate = `${year}-${month}-${day}`;
 
     const payload = {
-      data: formattedDate, // Envia a string formatada manualmente
+      data: formattedDate,
       tipo,
       valor: parseFloat(valor),
     };
