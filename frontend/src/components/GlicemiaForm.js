@@ -21,11 +21,11 @@ const GlicemiaForm = ({ onSave }) => {
       return;
     }
     
-    // FORMATANDO A DATA NO FUSO HORÁRIO LOCAL
-    const year = data.getFullYear();
-    const month = String(data.getMonth() + 1).padStart(2, '0');
-    const day = String(data.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
+    // SOLUÇÃO ROBUSTA PARA EVITAR O PROBLEMA DE FUSO HORÁRIO
+    // Cria uma nova data em UTC para garantir que o formato seja YYYY-MM-DD
+    // sem o fuso horário local
+    const dataUTC = new Date(Date.UTC(data.getFullYear(), data.getMonth(), data.getDate()));
+    const formattedDate = dataUTC.toISOString().split('T')[0];
 
     const payload = {
       data: formattedDate,
