@@ -5,16 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
 
-const tiposGlicemia = [
-  'Glicemia Jejum',
-  'Glicemia 2h após café',
-  'Glicemia antes do almoço',
-  'Glicemia 2h após almoço',
-  'Glicemia antes do jantar',
-  'Glicemia 2h após o jantar',
-  'Glicemia ao deitar',
-  'Glicemia as 3:00',
-];
+const tiposGlicemia = GLICEMIA_TIPOS;
 
 const GlicemiaForm = ({ onSave }) => {
   const [data, setData] = useState(new Date());
