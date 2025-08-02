@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from datetime import date # IMPORTADO AQUI
 
 app = Flask(__name__)
 CORS(app)
@@ -45,7 +46,6 @@ init_db()
 
 @app.route('/api/glicemia', methods=['POST'])
 def add_glicemia():
-    # ... o restante da sua função continua igual ...
     try:
         data = request.get_json()
         required_fields = ['data', 'tipo', 'valor']
@@ -60,9 +60,14 @@ def add_glicemia():
         if not conn:
             return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
 
+        # CONVERTENDO A STRING DA DATA EM UM OBJETO date DO PYTHON
+        # Isso garante que o psycopg2 envie o tipo de dado correto
+        # para o PostgreSQL, evitando problemas de fuso horário.
+        data_obj = date.fromisoformat(data_val)
+
         cursor.execute(
             "INSERT INTO glicemia (data, tipo, valor) VALUES (%s, %s, %s)",
-            (data_val, tipo_val, valor_val)
+            (data_obj, tipo_val, valor_val)
         )
         conn.commit()
         cursor.close()
@@ -73,7 +78,6 @@ def add_glicemia():
 
 @app.route('/api/glicemia', methods=['GET'])
 def get_glicemia():
-    # ... o restante da sua função continua igual ...
     try:
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
