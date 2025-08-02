@@ -73,3 +73,57 @@ th, td {
 th {
   background-color: #f2f2f2;
 }
+
+/* No final do seu arquivo src/index.css */
+
+/* Estilos que serão aplicados APENAS na impressão */
+@media print {
+  /* Oculte todos os elementos que não queremos imprimir */
+  body > *:not(.container) {
+    display: none;
+  }
+  
+  /* Oculte a seção do formulário, filtros e botões dentro do container */
+  .container > .form-section,
+  .container > h1,
+  .table-section > h3,
+  .table-section button,
+  .table-section .form-group {
+      display: none;
+  }
+  
+  /* Garanta que o container de impressão seja exibido */
+  .container {
+      margin: 0;
+      box-shadow: none;
+      padding: 0;
+  }
+
+  /* Estilize a área de impressão */
+  .printable-area {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Estilize a tabela para a impressão */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #000; /* Borda preta para melhor visualização na impressão */
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+  /* Para remover o cabeçalho e rodapé padrão da impressão (opcional) */
+  @page {
+    margin: 1cm;
+  }
+}
