@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from datetime import date # Removido 'datetime' para evitar a conversão
+from datetime import datetime, date
 
 app = Flask(__name__)
 CORS(app)
@@ -67,11 +67,15 @@ def add_glicemia():
         if not conn:
             return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
 
-        # ENVIANDO A STRING DA DATA DIRETAMENTE PARA O BANCO DE DADOS
-        # Removendo a conversão que estava causando o erro
+        # CONVERSÃO EXPLÍCITA USANDO datetime.strptime
+        data_obj = datetime.strptime(data_val, '%Y-%m-%d').date()
+
+        # LOGGING: IMPRIME O OBJETO DE DATA APÓS CONVERSÃO
+        print(f"Log 2: Objeto de data do Python: {data_obj}")
+
         cursor.execute(
             "INSERT INTO glicemia (data, tipo, valor) VALUES (%s, %s, %s)",
-            (data_val, tipo_val, valor_val)
+            (data_obj, tipo_val, valor_val)
         )
         conn.commit()
         cursor.close()
