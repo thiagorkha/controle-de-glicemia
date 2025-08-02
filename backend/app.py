@@ -67,11 +67,11 @@ def add_glicemia():
         if not conn:
             return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
 
-        data_obj = date.fromisoformat(data_val)
-
+        # ENVIANDO A STRING DA DATA DIRETAMENTE PARA O BANCO DE DADOS
+        # Removido a linha `data_obj = date.fromisoformat(data_val)`
         cursor.execute(
             "INSERT INTO glicemia (data, tipo, valor) VALUES (%s, %s, %s)",
-            (data_obj, tipo_val, valor_val)
+            (data_val, tipo_val, valor_val)
         )
         conn.commit()
         cursor.close()
