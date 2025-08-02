@@ -3,12 +3,11 @@ from flask_cors import CORS
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from datetime import date # IMPORTADO AQUI
+from datetime import date
 
 app = Flask(__name__)
 CORS(app)
 
-# Função para conectar ao banco de dados PostgreSQL
 def get_db():
     try:
         conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
@@ -40,8 +39,6 @@ def init_db():
         if conn:
             conn.close()
 
-# Chame a função de inicialização aqui, fora do bloco principal.
-# Isso garante que a tabela será criada no deploy do Render.
 init_db()
 
 @app.route('/api/glicemia', methods=['POST'])
@@ -56,13 +53,13 @@ def add_glicemia():
         tipo_val = data['tipo']
         valor_val = data['valor']
 
+        # LOGGING: IMPRIME O VALOR DA DATA RECEBIDA
+        print(f"Data recebida do frontend: {data_val}")
+
         conn, cursor = get_db()
         if not conn:
             return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
 
-        # CONVERTENDO A STRING DA DATA EM UM OBJETO date DO PYTHON
-        # Isso garante que o psycopg2 envie o tipo de dado correto
-        # para o PostgreSQL, evitando problemas de fuso horário.
         data_obj = date.fromisoformat(data_val)
 
         cursor.execute(
