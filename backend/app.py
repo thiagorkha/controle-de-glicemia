@@ -8,9 +8,17 @@ from datetime import date
 app = Flask(__name__)
 CORS(app)
 
+# Função para conectar ao banco de dados PostgreSQL
 def get_db():
     try:
         conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+        # DEFINE O FUSO HORÁRIO DA SESSÃO PARA UTC
+        cursor = conn.cursor()
+        cursor.execute("SET TIME ZONE 'UTC';")
+        conn.commit()
+        cursor.close()
+        
+        # Agora, abre um novo cursor para a aplicação
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         return conn, cursor
     except Exception as e:
@@ -53,7 +61,6 @@ def add_glicemia():
         tipo_val = data['tipo']
         valor_val = data['valor']
 
-        # LOGGING: IMPRIME O VALOR DA DATA RECEBIDA
         print(f"Data recebida do frontend: {data_val}")
 
         conn, cursor = get_db()
