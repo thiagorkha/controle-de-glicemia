@@ -1,8 +1,9 @@
 import React from 'react';
 import GlicemiaFilter from './GlicemiaFilter';
 
-const GlicemiaTable = ({ data, onFilter }) => {
+// ... no GlicemiaTable.js
 
+const GlicemiaTable = ({ data, onFilter }) => {
   const handlePrint = () => {
     window.print();
   };
@@ -14,24 +15,27 @@ const GlicemiaTable = ({ data, onFilter }) => {
       
       {data.length > 0 ? (
         <>
-          <table>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Tipo</th>
-                <th>Valor (mg/dL)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.data}</td>
-                  <td>{item.tipo}</td>
-                  <td>{item.valor}</td>
+          {/* Adicione um contêiner para a área de impressão */}
+          <div className="printable-area">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th>Valor (mg/dL)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.data}</td>
+                    <td>{item.tipo}</td>
+                    <td>{item.valor}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <button onClick={handlePrint} style={{ marginTop: '20px' }}>Imprimir Tabela</button>
         </>
       ) : (
