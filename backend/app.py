@@ -17,8 +17,35 @@ def get_db():
         print(f"Erro ao conectar ao banco de dados: {e}")
         return None, None
 
+def init_db():
+    conn, cursor = None, None
+    try:
+        conn, cursor = get_db()
+        if conn:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS glicemia (
+                    id SERIAL PRIMARY KEY,
+                    data DATE NOT NULL,
+                    tipo VARCHAR(255) NOT NULL,
+                    valor REAL NOT NULL
+                )
+            ''')
+            conn.commit()
+    except Exception as e:
+        print(f"Erro ao inicializar o banco de dados: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+# Chame a função de inicialização aqui, fora do bloco principal.
+# Isso garante que a tabela será criada no deploy do Render.
+init_db()
+
 @app.route('/api/glicemia', methods=['POST'])
 def add_glicemia():
+    # ... o restante da sua função continua igual ...
     try:
         data = request.get_json()
         required_fields = ['data', 'tipo', 'valor']
@@ -46,6 +73,7 @@ def add_glicemia():
 
 @app.route('/api/glicemia', methods=['GET'])
 def get_glicemia():
+    # ... o restante da sua função continua igual ...
     try:
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
@@ -69,19 +97,4 @@ def get_glicemia():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Re-inicializar o banco de dados (com a nova lógica)
-    conn, cursor = get_db()
-    if conn:
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS glicemia (
-                id SERIAL PRIMARY KEY,
-                data DATE NOT NULL,
-                tipo VARCHAR(255) NOT NULL,
-                valor REAL NOT NULL
-            )
-        ''')
-        conn.commit()
-        cursor.close()
-        conn.close()
-    
     app.run(debug=True)
