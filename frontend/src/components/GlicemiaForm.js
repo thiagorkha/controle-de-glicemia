@@ -6,11 +6,9 @@ import { GLICEMIA_TIPOS } from '../utils/constants';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
 
-const tiposGlicemia = GLICEMIA_TIPOS;
-
 const GlicemiaForm = ({ onSave }) => {
   const [data, setData] = useState(new Date());
-  const [tipo, setTipo] = useState(tiposGlicemia[0]);
+  const [tipo, setTipo] = useState(GLICEMIA_TIPOS[0]);
   const [valor, setValor] = useState('');
   const [error, setError] = useState('');
 
@@ -22,9 +20,15 @@ const GlicemiaForm = ({ onSave }) => {
       setError('Por favor, insira o valor da glicemia.');
       return;
     }
+    
+    // FORMATANDO A DATA NO FUSO HORÁRIO LOCAL
+    const year = data.getFullYear();
+    const month = String(data.getMonth() + 1).padStart(2, '0');
+    const day = String(data.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
 
     const payload = {
-      data: data.toISOString().split('T')[0], // Formato YYYY-MM-DD
+      data: formattedDate,
       tipo,
       valor: parseFloat(valor),
     };
@@ -33,7 +37,7 @@ const GlicemiaForm = ({ onSave }) => {
       await axios.post(apiBaseUrl, payload);
       alert('Registro salvo com sucesso!');
       setValor('');
-      onSave(); // Chama a função para atualizar a tabela
+      onSave();
     } catch (err) {
       setError('Erro ao salvar o registro. Tente novamente.');
       console.error(err);
@@ -55,7 +59,7 @@ const GlicemiaForm = ({ onSave }) => {
         <div className="form-group">
           <label htmlFor="tipo">Tipo de Glicemia:</label>
           <select id="tipo" value={tipo} onChange={(e) => setTipo(e.target.value)}>
-            {tiposGlicemia.map((item) => (
+            {GLICEMIA_TIPOS.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
