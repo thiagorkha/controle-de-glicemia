@@ -2,10 +2,13 @@ import React from 'react';
 import GlicemiaFilter from './GlicemiaFilter';
 import { GLICEMIA_TIPOS } from '../utils/constants';
 
-// Função para formatar a string de data de YYYY-MM-DD para dd/mm/aaaa
+// Função para formatar a string de data
 const formatDateString = (dateString) => {
   if (!dateString) return '';
-  const [year, month, day] = dateString.split('-');
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 };
 
@@ -45,7 +48,7 @@ const GlicemiaTable = ({ data, onFilter }) => {
               <tbody>
                 {sortedDates.map((date) => (
                   <tr key={date}>
-                    <td>{formatDateString(date)}</td> {/* AQUI ESTÁ A MUDANÇA */}
+                    <td>{formatDateString(date)}</td> {/* O código agora usa a nova função */}
                     {GLICEMIA_TIPOS.map((tipo) => (
                       <td key={tipo}>
                         {groupedByDate[date][tipo] || ''}
