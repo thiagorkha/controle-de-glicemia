@@ -11,6 +11,7 @@ const GlicemiaForm = ({ onSave }) => {
   const [tipo, setTipo] = useState(GLICEMIA_TIPOS[0]);
   const [valor, setValor] = useState('');
   const [error, setError] = useState('');
+  const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,22 +21,14 @@ const GlicemiaForm = ({ onSave }) => {
       setError('Por favor, insira o valor da glicemia.');
       return;
     }
-
-    // SOLUÇÃO FINAL PARA O PROBLEMA DE FUSO HORÁRIO
-    // Cria uma nova data e adiciona o fuso horário local para compensar o desvio.
-    const userDate = new Date(data);
-    userDate.setHours(userDate.getHours() + userDate.getTimezoneOffset() / 60);
     
-    const year = userDate.getFullYear();
-    const month = String(userDate.getMonth() + 1).padStart(2, '0');
-    const day = String(userDate.getDate()).padStart(2, '0');
-    
-    const formattedDate = `${year}-${month}-${day}`;
+    const formattedDate = data.toISOString().split('T')[0];
 
     const payload = {
       data: formattedDate,
       tipo,
       valor: parseFloat(valor),
+      timezone, // ENVIANDO O FUSO HORÁRIO PARA O BACKEND
     };
 
     try {
@@ -48,6 +41,10 @@ const GlicemiaForm = ({ onSave }) => {
       console.error(err);
     }
   };
+
+  const commonTimezones = [
+    'America/Sao_Paulo', 'UTC', 'America/New_York', 'Europe/London', 'Asia/Tokyo'
+  ];
 
   return (
     <div className="form-section">
@@ -81,6 +78,19 @@ const GlicemiaForm = ({ onSave }) => {
             step="0.1"
             placeholder="Ex: 95.5"
           />
+        </div>
+        <div className="form-group">
+          <label htmlFor="timezone">Fuso Horário:</label>
+          <select id="timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+            <option value={Intl.DateTimeFormat().resolvedOptions().timeZone}>
+              (Padrão) {Intl.DateTimeFormat().resolvedOptions().timeZone}
+            </option>
+            {commonTimezones.map((tz) => (
+              <option key={tz} value={tz}>
+                {tz}
+              </option>
+            ))}
+          </select>
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit">Salvar</button>
