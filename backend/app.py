@@ -3,8 +3,7 @@ from flask_cors import CORS
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from datetime import datetime, date
-import pytz
+from datetime import date # Removido 'datetime' para evitar a conversão
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +12,13 @@ CORS(app)
 def get_db():
     try:
         conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+        # DEFINE O FUSO HORÁRIO DA SESSÃO PARA UTC
+        cursor = conn.cursor()
+        cursor.execute("SET TIME ZONE 'UTC';")
+        conn.commit()
+        cursor.close()
+        
+        # Agora, abre um novo cursor para a aplicação
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         return conn, cursor
     except Exception as e:
@@ -47,35 +53,25 @@ init_db()
 def add_glicemia():
     try:
         data = request.get_json()
-        required_fields = ['data', 'tipo', 'valor', 'timezone']
+        required_fields = ['data', 'tipo', 'valor']
         if not all(field in data for field in required_fields):
             return jsonify({"error": "Campos obrigatórios ausentes"}), 400
 
         data_val = data['data']
         tipo_val = data['tipo']
         valor_val = data['valor']
-        timezone_val = data['timezone']
+
+        print(f"Data recebida do frontend: {data_val}")
 
         conn, cursor = get_db()
         if not conn:
             return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
 
-        # CONVERSÃO DA DATA COM FUSO HORÁRIO
-        local_timezone = pytz.timezone(timezone_val)
-        
-        # Cria uma data e hora no fuso horário local
-        naive_datetime = datetime.strptime(data_val, '%Y-%m-%d')
-        local_datetime = local_timezone.localize(naive_datetime)
-        
-        # Converte para UTC
-        utc_datetime = local_datetime.astimezone(pytz.utc)
-
-        # Salva apenas a parte da data no banco de dados
-        date_to_save = utc_datetime.date()
-
+        # ENVIANDO A STRING DA DATA DIRETAMENTE PARA O BANCO DE DADOS
+        # Removido a linha `data_obj = date.fromisoformat(data_val)`
         cursor.execute(
             "INSERT INTO glicemia (data, tipo, valor) VALUES (%s, %s, %s)",
-            (date_to_save, tipo_val, valor_val)
+            (data_val, tipo_val, valor_val)
         )
         conn.commit()
         cursor.close()
