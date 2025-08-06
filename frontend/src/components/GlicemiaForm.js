@@ -21,10 +21,13 @@ const GlicemiaForm = ({ onSave }) => {
       return;
     }
     
-    // CORREÇÃO: FORMATA A DATA MANULAMENTE PARA EVITAR ERROS DE FUSO HORÁRIO
-    const dia = String(data.getDate()).padStart(2, '0');
-    const mes = String(data.getMonth() + 1).padStart(2, '0');
-    const ano = data.getFullYear();
+    // CORREÇÃO: ADICIONA 1 DIA À DATA ANTES DE FORMATAR PARA COMPENSAR O FUSO HORÁRIO
+    const dataCorrigida = new Date(data);
+    dataCorrigida.setDate(dataCorrigida.getDate() + 1);
+
+    const dia = String(dataCorrigida.getDate()).padStart(2, '0');
+    const mes = String(dataCorrigida.getMonth() + 1).padStart(2, '0');
+    const ano = dataCorrigida.getFullYear();
     const formattedDate = `${ano}-${mes}-${dia}`;
     
     const payload = {
