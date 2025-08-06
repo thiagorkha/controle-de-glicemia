@@ -69,8 +69,7 @@ def add_glicemia():
         print(f"Erro na função add_glicemia: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Rota para excluir um registro
-@app.route('/api/glicemia/<int:id>', methods=['DELETE'])
+@app.route('/api/glicemia', methods=['DELETE'])
 def delete_glicemia(id):
     try:
         conn, cursor = get_db()
@@ -108,10 +107,15 @@ def get_glicemia():
             cursor.execute(query)
 
         rows = cursor.fetchall()
+
+        # LOGGING: IMPRIME O QUE FOI RETORNADO DO BANCO DE DADOS
+        print(f"Registros encontrados no banco de dados: {rows}")
+
         cursor.close()
         conn.close()
         return jsonify(rows), 200
     except Exception as e:
+        print(f"Erro na função get_glicemia: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
