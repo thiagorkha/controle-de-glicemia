@@ -1,60 +1,69 @@
 import React from 'react';
-import axios from 'axios';
+import GlicemiaFilter from './GlicemiaFilter';
 import { GLICEMIA_TIPOS } from '../utils/constants';
 
-const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
-
-// Função auxiliar para formatar a data
+// Função para formatar a string de data
 const formatDateString = (dateString) => {
   if (!dateString) return '';
-  const [year, month, day] = dateString.split('-');
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 };
 
-const GlicemiaTable = ({ registros, onDataFetched }) => {
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este registro?')) {
-      try {
-        await axios.delete(`${apiBaseUrl}/${id}`);
-        onDataFetched(); // Atualiza a tabela após a exclusão
-        alert('Registro excluído com sucesso!');
-      } catch (error) {
-        alert('Erro ao excluir o registro.');
-        console.error(error);
-      }
-    }
+const GlicemiaTable = ({ data, onFilter }) => {
+  const handlePrint = () => {
+    window.print();
   };
 
-  if (!registros || registros.length === 0) {
-    return <p>Nenhum registro encontrado.</p>;
-  }
+  const groupedByDate = data.reduce((acc, current) => {
+    const date = current.data;
+    if (!acc[date]) {
+      acc[date] = {};
+    }
+    acc[date][current.tipo] = current.valor;
+    return acc;
+  }, {});
+
+  const sortedDates = Object.keys(groupedByDate).sort().reverse();
 
   return (
     <div className="table-section">
-      <h3>Registros de Glicemia</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Tipo</th>
-            <th>Valor</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {registros.map((registro) => (
-            <tr key={registro.id}>
-              <td>{formatDateString(registro.data)}</td>
-              <td>{GLICEMIA_TIPOS.find(t => t === registro.tipo) || registro.tipo}</td>
-              <td>{registro.valor} mg/dL</td>
-              <td>
-                <button onClick={() => handleDelete(registro.id)}>Excluir</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h3>Visualizar Registros</h3>
+      <GlicemiaFilter onFilter={onFilter} />
+      
+      {sortedDates.length > 0 ? (
+        <>
+          <div className="printable-area">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  {GLICEMIA_TIPOS.map((tipo) => (
+                    <th key={tipo}>{tipo}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedDates.map((date) => (
+                  <tr key={date}>
+                    <td>{formatDateString(date)}</td> {/* O código agora usa a nova função */}
+                    {GLICEMIA_TIPOS.map((tipo) => (
+                      <td key={tipo}>
+                        {groupedByDate[date][tipo] || ''}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button onClick={handlePrint} style={{ marginTop: '20px' }}>Imprimir Tabela</button>
+        </>
+      ) : (
+        <p>Nenhum registro encontrado. Use o filtro ou adicione um novo registro.</p>
+      )}
     </div>
   );
 };
