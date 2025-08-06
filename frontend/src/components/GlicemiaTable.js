@@ -1,8 +1,5 @@
 import React from 'react';
-import axios from 'axios';
 import { GLICEMIA_TIPOS } from '../utils/constants';
-
-const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
 
 // Função auxiliar para formatar a data
 const formatDateString = (dateString) => {
@@ -11,21 +8,7 @@ const formatDateString = (dateString) => {
   return `${day}/${month}/${year}`;
 };
 
-const GlicemiaTable = ({ registros, onDataFetched }) => {
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este registro?')) {
-      try {
-        await axios.delete(`${apiBaseUrl}/${id}`);
-        onDataFetched(); // Atualiza a tabela após a exclusão
-        alert('Registro excluído com sucesso!');
-      } catch (error) {
-        alert('Erro ao excluir o registro.');
-        console.error(error);
-      }
-    }
-  };
-
+const GlicemiaTable = ({ registros }) => {
   if (!registros || registros.length === 0) {
     return <p>Nenhum registro encontrado.</p>;
   }
@@ -39,7 +22,6 @@ const GlicemiaTable = ({ registros, onDataFetched }) => {
             <th>Data</th>
             <th>Tipo</th>
             <th>Valor</th>
-            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -48,9 +30,6 @@ const GlicemiaTable = ({ registros, onDataFetched }) => {
               <td>{formatDateString(registro.data)}</td>
               <td>{GLICEMIA_TIPOS.find(t => t === registro.tipo) || registro.tipo}</td>
               <td>{registro.valor} mg/dL</td>
-              <td>
-                <button onClick={() => handleDelete(registro.id)}>Excluir</button>
-              </td>
             </tr>
           ))}
         </tbody>
