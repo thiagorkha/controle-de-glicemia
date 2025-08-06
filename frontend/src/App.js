@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import GlicemiaForm from './components/GlicemiaForm';
 import GlicemiaTable from './components/GlicemiaTable';
-import GlicemiaChart from './components/GlicemiaChart';
+import GlicemiaFilter from './components/GlicemiaFilter';
 import './index.css';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
