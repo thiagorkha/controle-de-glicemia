@@ -60,12 +60,11 @@ def add_glicemia():
 
         # CONVERSÃO EXPLÍCITA E SEGURA DA DATA
         try:
-            # Converte a string 'YYYY-MM-DD' em um objeto datetime
             datetime_obj = datetime.strptime(data_val, '%Y-%m-%d')
-            # Extrai apenas a parte da data, que é o que o banco de dados espera
             data_obj = datetime_obj.date()
-        except ValueError:
-            return jsonify({"error": "Formato de data inválido. Use YYYY-MM-DD"}), 400
+        except ValueError as ve:
+            # Captura e retorna o erro de formato de data
+            return jsonify({"error": f"Formato de data inválido. Use YYYY-MM-DD. Erro: {str(ve)}"}), 400
 
         cursor.execute(
             "INSERT INTO glicemia (data, tipo, valor) VALUES (%s, %s, %s)",
@@ -76,7 +75,9 @@ def add_glicemia():
         conn.close()
         return jsonify({"message": "Registro adicionado com sucesso"}), 201
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        # LOGGING: IMPRIME O ERRO COMPLETO
+        print(f"Erro na função add_glicemia: {e}")
+        return jsonify({"error": "Erro ao salvar o registro. Tente novamente."}), 500
 
 @app.route('/api/glicemia', methods=['GET'])
 def get_glicemia():
