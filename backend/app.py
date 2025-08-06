@@ -69,26 +69,6 @@ def add_glicemia():
         print(f"Erro na função add_glicemia: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/glicemia', methods=['DELETE'])
-def delete_glicemia(id):
-    try:
-        conn, cursor = get_db()
-        if not conn:
-            return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
-
-        cursor.execute("DELETE FROM glicemia WHERE id = %s", (id,))
-        conn.commit()
-        
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Registro não encontrado"}), 404
-            
-        cursor.close()
-        conn.close()
-        return jsonify({"message": "Registro excluído com sucesso"}), 200
-    except Exception as e:
-        print(f"Erro na função delete_glicemia: {e}")
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/api/glicemia', methods=['GET'])
 def get_glicemia():
     try:
@@ -107,10 +87,6 @@ def get_glicemia():
             cursor.execute(query)
 
         rows = cursor.fetchall()
-
-        # LOGGING: IMPRIME O QUE FOI RETORNADO DO BANCO DE DADOS
-        print(f"Registros encontrados no banco de dados: {rows}")
-
         cursor.close()
         conn.close()
         return jsonify(rows), 200
