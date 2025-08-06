@@ -91,7 +91,6 @@ def get_glicemia():
         conn.close()
         return jsonify(rows), 200
     except Exception as e:
-        print(f"Erro na função get_glicemia: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
