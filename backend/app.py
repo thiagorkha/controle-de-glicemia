@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from datetime import datetime, date
+from datetime import date
 
 app = Flask(__name__)
 CORS(app)
@@ -58,26 +58,17 @@ def add_glicemia():
         if not conn:
             return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
 
-        # CONVERSÃO EXPLÍCITA E SEGURA DA DATA
-        try:
-            datetime_obj = datetime.strptime(data_val, '%Y-%m-%d')
-            data_obj = datetime_obj.date()
-        except ValueError as ve:
-            # Captura e retorna o erro de formato de data
-            return jsonify({"error": f"Formato de data inválido. Use YYYY-MM-DD. Erro: {str(ve)}"}), 400
-
         cursor.execute(
             "INSERT INTO glicemia (data, tipo, valor) VALUES (%s, %s, %s)",
-            (data_obj, tipo_val, valor_val)
+            (data_val, tipo_val, valor_val)
         )
         conn.commit()
         cursor.close()
         conn.close()
         return jsonify({"message": "Registro adicionado com sucesso"}), 201
     except Exception as e:
-        # LOGGING: IMPRIME O ERRO COMPLETO
         print(f"Erro na função add_glicemia: {e}")
-        return jsonify({"error": "Erro ao salvar o registro. Tente novamente."}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/glicemia', methods=['GET'])
 def get_glicemia():
