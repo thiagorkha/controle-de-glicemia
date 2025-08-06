@@ -3,7 +3,6 @@ from flask_cors import CORS
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from datetime import date # Removido 'datetime' para evitar a conversão
 
 app = Flask(__name__)
 CORS(app)
@@ -12,13 +11,6 @@ CORS(app)
 def get_db():
     try:
         conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
-        # DEFINE O FUSO HORÁRIO DA SESSÃO PARA UTC
-        cursor = conn.cursor()
-        cursor.execute("SET TIME ZONE 'UTC';")
-        conn.commit()
-        cursor.close()
-        
-        # Agora, abre um novo cursor para a aplicação
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         return conn, cursor
     except Exception as e:
@@ -61,14 +53,10 @@ def add_glicemia():
         tipo_val = data['tipo']
         valor_val = data['valor']
 
-        print(f"Data recebida do frontend: {data_val}")
-
         conn, cursor = get_db()
         if not conn:
             return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
 
-        # ENVIANDO A STRING DA DATA DIRETAMENTE PARA O BANCO DE DADOS
-        # Removido a linha `data_obj = date.fromisoformat(data_val)`
         cursor.execute(
             "INSERT INTO glicemia (data, tipo, valor) VALUES (%s, %s, %s)",
             (data_val, tipo_val, valor_val)
@@ -78,6 +66,7 @@ def add_glicemia():
         conn.close()
         return jsonify({"message": "Registro adicionado com sucesso"}), 201
     except Exception as e:
+        print(f"Erro na função add_glicemia: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/glicemia', methods=['GET'])
