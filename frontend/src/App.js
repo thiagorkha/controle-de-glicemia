@@ -3,7 +3,7 @@ import axios from 'axios';
 import GlicemiaForm from './components/GlicemiaForm';
 import GlicemiaTable from './components/GlicemiaTable';
 import GlicemiaChart from './components/GlicemiaChart';
-import './App.css';
+import './index.css';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
 
