@@ -1,29 +1,34 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-// Remova a importação do DatePicker
-// Remova a importação de 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { GLICEMIA_TIPOS } from '../utils/constants';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/glicemia';
 
 const GlicemiaForm = ({ onSave }) => {
-  // Use uma string para a data em vez de um objeto Date
-  const [data, setData] = useState('');
+  const [data, setData] = useState(new Date());
   const [tipo, setTipo] = useState(GLICEMIA_TIPOS[0]);
   const [valor, setValor] = useState('');
   const [error, setError] = useState('');
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!valor || !data) {
-      setError('Por favor, preencha todos os campos.');
+    if (!valor) {
+      setError('Por favor, insira o valor da glicemia.');
       return;
     }
-
+    
+    // CORREÇÃO: FORMATA A DATA MANULAMENTE PARA EVITAR ERROS DE FUSO HORÁRIO
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    const formattedDate = `${ano}-${mes}-${dia}`;
+    
     const payload = {
-      data: data, // A data já é uma string no formato 'YYYY-MM-DD'
+      data: formattedDate,
       tipo,
       valor: parseFloat(valor),
     };
@@ -32,7 +37,6 @@ const GlicemiaForm = ({ onSave }) => {
       await axios.post(apiBaseUrl, payload);
       alert('Registro salvo com sucesso!');
       setValor('');
-      setData(''); // Limpa o campo de data
       onSave();
     } catch (err) {
       setError('Erro ao salvar o registro. Tente novamente.');
@@ -45,13 +49,11 @@ const GlicemiaForm = ({ onSave }) => {
       <h3>Adicionar Novo Registro</h3>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="data">Data (YYYY-MM-DD):</label>
-          <input
-            id="data"
-            type="text"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            placeholder="Ex: 2024-12-29"
+          <label htmlFor="data">Data:</label>
+          <DatePicker
+            selected={data}
+            onChange={(date) => setData(date)}
+            dateFormat="dd/MM/yyyy"
           />
         </div>
         <div className="form-group">
